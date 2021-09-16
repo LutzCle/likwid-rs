@@ -36,7 +36,7 @@ pub fn register_region(region_tag: &str) -> Result<()> {
     let ret = unsafe { likwid::likwid_markerRegisterRegion(c_region_tag.as_ptr()) };
 
     if ret != 0 {
-        Err(IoError::from_raw_os_error(ret))?;
+        Err(IoError::from_raw_os_error(-ret))?;
     }
 
     Ok(())
@@ -48,7 +48,7 @@ pub fn marker_start_region(region_tag: &str) -> Result<()> {
     let ret = unsafe { likwid::likwid_markerStartRegion(c_region_tag.as_ptr()) };
 
     if ret != 0 {
-        Err(IoError::from_raw_os_error(ret))?;
+        Err(IoError::from_raw_os_error(-ret))?;
     }
 
     Ok(())
@@ -60,7 +60,7 @@ pub fn marker_stop_region(region_tag: &str) -> Result<()> {
     let ret = unsafe { likwid::likwid_markerStopRegion(c_region_tag.as_ptr()) };
 
     if ret != 0 {
-        Err(IoError::from_raw_os_error(ret))?;
+        Err(IoError::from_raw_os_error(-ret))?;
     }
 
     Ok(())
@@ -72,7 +72,7 @@ pub fn marker_reset_region(region_tag: &str) -> Result<()> {
     let ret = unsafe { likwid::likwid_markerResetRegion(c_region_tag.as_ptr()) };
 
     if ret != 0 {
-        Err(IoError::from_raw_os_error(ret))?;
+        Err(IoError::from_raw_os_error(-ret))?;
     }
 
     Ok(())
