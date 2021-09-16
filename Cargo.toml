@@ -6,4 +6,5 @@ edition = "2018"
 license = "GPL-3.0"
 
 [dependencies]
+libloading = "0.7"
 thiserror = "1.0"

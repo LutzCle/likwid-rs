@@ -2,6 +2,7 @@
 set -exu
 
 bindgen \
+  --dynamic-loading="liblikwid" \
   --whitelist-function="^likwid_marker.*" \
   --default-enum-style=rust \
   --no-doc-comments \
