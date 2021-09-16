@@ -1,104 +1,116 @@
 pub mod error;
 mod likwid;
 
+use self::likwid::liblikwid;
 use crate::error::Result;
 use std::ffi::CString;
 use std::io::Error as IoError;
 use std::os::raw::c_int;
 
-pub fn init() {
-    unsafe {
-        likwid::likwid_markerInit();
-    }
+const LIB_PATH: &str = "likwid";
+
+pub struct Likwid {
+    lib: liblikwid,
 }
 
-pub fn thread_init() {
-    unsafe {
-        likwid::likwid_markerThreadInit();
-    }
-}
+impl Likwid {
+    pub fn init() -> Result<Self> {
+        let lib = unsafe { liblikwid::new(libloading::library_filename(LIB_PATH))? };
+        unsafe {
+            lib.likwid_markerInit();
+        }
 
-pub fn next_group() {
-    unsafe {
-        likwid::likwid_markerNextGroup();
-    }
-}
-
-pub fn close() {
-    unsafe {
-        likwid::likwid_markerClose();
-    }
-}
-
-pub fn register_region(region_tag: &str) -> Result<()> {
-    let c_region_tag = CString::new(region_tag)?;
-
-    let ret = unsafe { likwid::likwid_markerRegisterRegion(c_region_tag.as_ptr()) };
-
-    if ret != 0 {
-        Err(IoError::from_raw_os_error(-ret))?;
+        Ok(Self { lib })
     }
 
-    Ok(())
-}
-
-pub fn marker_start_region(region_tag: &str) -> Result<()> {
-    let c_region_tag = CString::new(region_tag)?;
-
-    let ret = unsafe { likwid::likwid_markerStartRegion(c_region_tag.as_ptr()) };
-
-    if ret != 0 {
-        Err(IoError::from_raw_os_error(-ret))?;
+    pub fn thread_init(&self) {
+        unsafe {
+            self.lib.likwid_markerThreadInit();
+        }
     }
 
-    Ok(())
-}
-
-pub fn marker_stop_region(region_tag: &str) -> Result<()> {
-    let c_region_tag = CString::new(region_tag)?;
-
-    let ret = unsafe { likwid::likwid_markerStopRegion(c_region_tag.as_ptr()) };
-
-    if ret != 0 {
-        Err(IoError::from_raw_os_error(-ret))?;
+    pub fn next_group(&self) {
+        unsafe {
+            self.lib.likwid_markerNextGroup();
+        }
     }
 
-    Ok(())
-}
-
-pub fn marker_reset_region(region_tag: &str) -> Result<()> {
-    let c_region_tag = CString::new(region_tag)?;
-
-    let ret = unsafe { likwid::likwid_markerResetRegion(c_region_tag.as_ptr()) };
-
-    if ret != 0 {
-        Err(IoError::from_raw_os_error(-ret))?;
+    pub fn close(&self) {
+        unsafe {
+            self.lib.likwid_markerClose();
+        }
     }
 
-    Ok(())
-}
+    pub fn register_region(&self, region_tag: &str) -> Result<()> {
+        let c_region_tag = CString::new(region_tag)?;
 
-pub fn marker_get_region(region_tag: &str, events: &mut Vec<f64>) -> Result<(f64, i32)> {
-    let c_region_tag = CString::new(region_tag)?;
-    let mut time = 0.0;
-    let mut count = 0;
-    let mut nr_events = events.len() as c_int;
+        let ret = unsafe { self.lib.likwid_markerRegisterRegion(c_region_tag.as_ptr()) };
 
-    unsafe {
-        likwid::likwid_markerGetRegion(
-            c_region_tag.as_ptr(),
-            &mut nr_events,
-            events.as_mut_ptr(),
-            &mut time,
-            &mut count,
+        if ret != 0 {
+            Err(IoError::from_raw_os_error(-ret))?;
+        }
+
+        Ok(())
+    }
+
+    pub fn marker_start_region(&self, region_tag: &str) -> Result<()> {
+        let c_region_tag = CString::new(region_tag)?;
+
+        let ret = unsafe { self.lib.likwid_markerStartRegion(c_region_tag.as_ptr()) };
+
+        if ret != 0 {
+            Err(IoError::from_raw_os_error(-ret))?;
+        }
+
+        Ok(())
+    }
+
+    pub fn marker_stop_region(&self, region_tag: &str) -> Result<()> {
+        let c_region_tag = CString::new(region_tag)?;
+
+        let ret = unsafe { self.lib.likwid_markerStopRegion(c_region_tag.as_ptr()) };
+
+        if ret != 0 {
+            Err(IoError::from_raw_os_error(-ret))?;
+        }
+
+        Ok(())
+    }
+
+    pub fn marker_reset_region(&self, region_tag: &str) -> Result<()> {
+        let c_region_tag = CString::new(region_tag)?;
+
+        let ret = unsafe { self.lib.likwid_markerResetRegion(c_region_tag.as_ptr()) };
+
+        if ret != 0 {
+            Err(IoError::from_raw_os_error(-ret))?;
+        }
+
+        Ok(())
+    }
+
+    pub fn marker_get_region(&self, region_tag: &str, events: &mut Vec<f64>) -> Result<(f64, i32)> {
+        let c_region_tag = CString::new(region_tag)?;
+        let mut time = 0.0;
+        let mut count = 0;
+        let mut nr_events = events.len() as c_int;
+
+        unsafe {
+            self.lib.likwid_markerGetRegion(
+                c_region_tag.as_ptr(),
+                &mut nr_events,
+                events.as_mut_ptr(),
+                &mut time,
+                &mut count,
+            );
+        };
+
+        assert!(
+            nr_events >= 0,
+            "Event length returned by Likwid is smaller than 0"
         );
-    };
+        events.resize(nr_events as usize, 0.0);
 
-    assert!(
-        nr_events >= 0,
-        "Event length returned by Likwid is smaller than 0"
-    );
-    events.resize(nr_events as usize, 0.0);
-
-    Ok((time, count))
+        Ok((time, count))
+    }
 }
