@@ -1,4 +1,7 @@
 fn main() {
-    println!("cargo:rustc-link-search=native=/usr/local");
-    println!("cargo:rustc-link-lib=likwid");
+    #[cfg(feature = "likwid_perfmon")]
+    {
+        println!("cargo:rustc-link-search=native=/usr/local");
+        println!("cargo:rustc-link-lib=likwid");
+    }
 }
