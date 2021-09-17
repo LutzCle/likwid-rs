@@ -1,3 +1,4 @@
+use cstr::cstr;
 use likwid;
 use std::error::Error;
 use std::result::Result;
@@ -5,15 +6,15 @@ use std::result::Result;
 #[test]
 fn run_marker() -> Result<(), Box<dyn Error>> {
     likwid::init();
-    likwid::register_region("test")?;
-    likwid::marker_start_region("test")?;
+    likwid::register_region(cstr!("test"))?;
+    likwid::marker_start_region(cstr!("test"))?;
 
     let mut counter = 0;
     for i in 0..10000 {
         counter += i;
     }
 
-    likwid::marker_stop_region("test")?;
+    likwid::marker_stop_region(cstr!("test"))?;
     likwid::close();
 
     println!("{}", counter);

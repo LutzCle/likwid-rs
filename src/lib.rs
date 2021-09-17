@@ -33,12 +33,10 @@ pub fn close() {
     }
 }
 
-pub fn register_region(_region_tag: &str) -> Result<()> {
+pub fn register_region(_region_tag: &std::ffi::CStr) -> Result<()> {
     #[cfg(feature = "likwid_perfmon")]
     {
-        let c_region_tag = std::ffi::CString::new(_region_tag)?;
-
-        let ret = unsafe { likwid::likwid_markerRegisterRegion(c_region_tag.as_ptr()) };
+        let ret = unsafe { likwid::likwid_markerRegisterRegion(_region_tag.as_ptr()) };
 
         if ret != 0 {
             Err(std::io::Error::from_raw_os_error(-ret))?;
@@ -48,12 +46,10 @@ pub fn register_region(_region_tag: &str) -> Result<()> {
     Ok(())
 }
 
-pub fn marker_start_region(_region_tag: &str) -> Result<()> {
+pub fn marker_start_region(_region_tag: &std::ffi::CStr) -> Result<()> {
     #[cfg(feature = "likwid_perfmon")]
     {
-        let c_region_tag = std::ffi::CString::new(_region_tag)?;
-
-        let ret = unsafe { likwid::likwid_markerStartRegion(c_region_tag.as_ptr()) };
+        let ret = unsafe { likwid::likwid_markerStartRegion(_region_tag.as_ptr()) };
 
         if ret != 0 {
             Err(std::io::Error::from_raw_os_error(-ret))?;
@@ -63,12 +59,10 @@ pub fn marker_start_region(_region_tag: &str) -> Result<()> {
     Ok(())
 }
 
-pub fn marker_stop_region(_region_tag: &str) -> Result<()> {
+pub fn marker_stop_region(_region_tag: &std::ffi::CStr) -> Result<()> {
     #[cfg(feature = "likwid_perfmon")]
     {
-        let c_region_tag = std::ffi::CString::new(_region_tag)?;
-
-        let ret = unsafe { likwid::likwid_markerStopRegion(c_region_tag.as_ptr()) };
+        let ret = unsafe { likwid::likwid_markerStopRegion(_region_tag.as_ptr()) };
 
         if ret != 0 {
             Err(std::io::Error::from_raw_os_error(-ret))?;
@@ -78,12 +72,10 @@ pub fn marker_stop_region(_region_tag: &str) -> Result<()> {
     Ok(())
 }
 
-pub fn marker_reset_region(_region_tag: &str) -> Result<()> {
+pub fn marker_reset_region(_region_tag: &std::ffi::CStr) -> Result<()> {
     #[cfg(feature = "likwid_perfmon")]
     {
-        let c_region_tag = std::ffi::CString::new(_region_tag)?;
-
-        let ret = unsafe { likwid::likwid_markerResetRegion(c_region_tag.as_ptr()) };
+        let ret = unsafe { likwid::likwid_markerResetRegion(_region_tag.as_ptr()) };
 
         if ret != 0 {
             Err(std::io::Error::from_raw_os_error(-ret))?;
@@ -93,17 +85,19 @@ pub fn marker_reset_region(_region_tag: &str) -> Result<()> {
     Ok(())
 }
 
-pub fn marker_get_region(_region_tag: &str, _events: &mut Vec<f64>) -> Result<(f64, i32)> {
+pub fn marker_get_region(
+    _region_tag: &std::ffi::CStr,
+    _events: &mut Vec<f64>,
+) -> Result<(f64, i32)> {
     #[cfg(feature = "likwid_perfmon")]
     {
-        let c_region_tag = std::ffi::CString::new(_region_tag)?;
         let mut time = 0.0;
         let mut count = 0;
         let mut nr_events = _events.len() as std::os::raw::c_int;
 
         unsafe {
             likwid::likwid_markerGetRegion(
-                c_region_tag.as_ptr(),
+                _region_tag.as_ptr(),
                 &mut nr_events,
                 _events.as_mut_ptr(),
                 &mut time,
