@@ -5,7 +5,8 @@ use std::result::Result;
 
 #[test]
 fn run_marker() -> Result<(), Box<dyn Error>> {
-    likwid::init();
+    let _likwid = likwid::Likwid::init();
+
     likwid::register_region(cstr!("test"))?;
     likwid::marker_start_region(cstr!("test"))?;
 
@@ -15,7 +16,6 @@ fn run_marker() -> Result<(), Box<dyn Error>> {
     }
 
     likwid::marker_stop_region(cstr!("test"))?;
-    likwid::close();
 
     println!("{}", counter);
 

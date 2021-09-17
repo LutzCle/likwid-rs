@@ -5,10 +5,29 @@ mod likwid;
 
 use crate::error::Result;
 
-pub fn init() {
-    #[cfg(feature = "likwid_perfmon")]
-    unsafe {
-        likwid::likwid_markerInit();
+pub struct Likwid;
+
+impl Likwid {
+    pub fn init() -> Likwid {
+        #[cfg(feature = "likwid_perfmon")]
+        unsafe {
+            likwid::likwid_markerInit();
+        }
+
+        Likwid
+    }
+
+    fn close() {
+        #[cfg(feature = "likwid_perfmon")]
+        unsafe {
+            likwid::likwid_markerClose();
+        }
+    }
+}
+
+impl Drop for Likwid {
+    fn drop(&mut self) {
+        Self::close();
     }
 }
 
@@ -23,13 +42,6 @@ pub fn next_group() {
     #[cfg(feature = "likwid_perfmon")]
     unsafe {
         likwid::likwid_markerNextGroup();
-    }
-}
-
-pub fn close() {
-    #[cfg(feature = "likwid_perfmon")]
-    unsafe {
-        likwid::likwid_markerClose();
     }
 }
 
